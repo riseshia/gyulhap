@@ -1,13 +1,13 @@
 defmodule GyulhapTest do
   use ExUnit.Case
-  doctest Gyulhap
 
   test "judge?" do
     solutions = [{1, 2, 3}, {2, 3, 4}, {4, 5, 6}]
 
-    assert Gyulhap.judge?(solutions, {2, 3, 4})
-    assert Gyulhap.judge?(solutions, {3, 2, 1})
-    refute Gyulhap.judge?(solutions, {1, 2, 5})
+    assert Gyulhap.judge?(solutions, [], {2, 3, 4})
+    assert Gyulhap.judge?(solutions, [], {3, 2, 1})
+    refute Gyulhap.judge?(solutions, [], {1, 2, 5})
+    refute Gyulhap.judge?(solutions, [{2, 3, 4}], {2, 3, 4})
   end
 
   test "solutions" do

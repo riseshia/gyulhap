@@ -74,13 +74,13 @@ defmodule Gyulhap do
   @doc """
   Check given solution is included in actual solutions or not
   """
-  @spec judge?([solution], solution) :: boolean
-  def judge?(solutions, solution) do
+  @spec judge?([solution], [solution], solution) :: boolean
+  def judge?(solutions, used_solutions, solution) do
     expected = sort(solution)
-    Enum.member?(solutions, expected)
+    Enum.member?(solutions, expected) && !Enum.member?(used_solutions, expected)
   end
 
-  defp sort({a, b, c}) do
+  def sort({a, b, c}) do
     [a, b, c]
     |> Enum.sort()
     |> List.to_tuple()
