@@ -1,4 +1,4 @@
-defmodule Gyulhap.Game do
+defmodule Gyulhap.GameServer do
   use GenServer
 
   def init(_) do

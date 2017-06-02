@@ -1,6 +1,6 @@
 defmodule Timer do
   use GenServer
-  alias Gyulhap.Game
+  alias Gyulhap.GameServer
 
   def init(time), do: {:ok, time}
 
@@ -9,7 +9,7 @@ defmodule Timer do
   end
 
   def handle_call(:tick, _from, 0) do
-    GenServer.call(Game, :timeout)
+    GenServer.call(GameServer, :timeout)
     {:reply, 10, 10}
   end
   def handle_call(:tick, _from, remain) do
