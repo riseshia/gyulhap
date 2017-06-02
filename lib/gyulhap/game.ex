@@ -4,12 +4,22 @@ defmodule Gyulhap.Game do
   Documentation for Gyulhap.
   """
 
+  alias Gyulhap.Element
+
+  @type t :: %Gyulhap.Game{turn: integer,
+                           used_solutions: [solution],
+                           timeout_count: integer,
+                           is_finished: boolean,
+                           solutions: [solution],
+                           table: [Element.t]}
   @type solution :: {integer, integer, integer}
+
+  defstruct ~w(turn used_solutions timeout_count is_finished solutions table)a
 
   @spec init() :: map
   def init() do
     table = Gyulhap.generate_table()
-    %{
+    %Gyulhap.Game{
       turn: 0,
       used_solutions: [],
       timeout_count: 0,
@@ -19,6 +29,7 @@ defmodule Gyulhap.Game do
     }
   end
 
+  @spec role_turn(t, atom, solution) :: {atom, t}
   def role_turn(state, user, answer) do
     cond do
       !turn_of?(state, user) ->
