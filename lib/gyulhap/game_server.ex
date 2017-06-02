@@ -1,18 +1,11 @@
 defmodule Gyulhap.GameServer do
   use GenServer
+  alias Gyulhap.Game
 
   def init(_) do
-    table = Gyulhap.generate_table()
     GenServer.start_link(Timer, 10, name: Timer)
     :timer.apply_interval(:timer.seconds(1), Timer, :tick, [])
-    {:ok, %{
-      turn: 0,
-      used_solutions: [],
-      timeout_count: 0,
-      is_finished: false,
-      solutions: Gyulhap.solutions(table),
-      table: table,
-    }}
+    {:ok, Game.init()}
   end
 
   def handle_call(:state, _from, state) do
@@ -20,29 +13,23 @@ defmodule Gyulhap.GameServer do
   end
 
   def handle_call(:turn_start, _from, state) do
-    new_state = turn_start(state)
+    new_state = Game.turn_start(state)
     # reset_timer
     {:reply, new_state, new_state}
   end
 
   def handle_call({:answer, user, :hap, answer}, _from, state) do
     new_state =
-      cond do
-        !turn_of?(state, user) ->
+      case Game.role_turn(state, user, answer) do
+        {:not_turn, new_state} ->
           IO.puts "It's not your turn"
-          state
-        Gyulhap.judge?(state.solutions, state.used_solutions, answer) ->
+          new_state
+        {:success, new_state} ->
           GenServer.call(user, {:update_score, 1})
-          new_answer = Gyulhap.sort(answer)
-          state
-          |> add_solution(new_answer)
-          |> Map.put(:timeout_count, 0)
-          |> turn_start()
-        true ->
+          new_state
+        {:fail, new_state} ->
           GenServer.call(user, {:update_score, -1})
-          state
-          |> Map.put(:timeout_count, 0)
-          |> turn_start()
+          new_state
       end
     {:reply, new_state, new_state}
   end
@@ -52,24 +39,8 @@ defmodule Gyulhap.GameServer do
     {:reply, new_state, new_state}
   end
   def handle_call(:timeout, _from, state) do
-    new_state =
-      state
-      |> turn_start()
-      |> Map.update(:timeout_count, 0, &(&1 + 1))
+    new_state = Game.timeout(state)
     {:reply, new_state, new_state}
-  end
-
-  defp turn_of?(state, user) do
-    !state.is_finished &&
-      :"user#{2 - rem(state.turn, 2)}" == user
-  end
-
-  defp turn_start(state) do
-    Map.update(state, :turn, 0, &(&1 + 1))
-  end
-
-  defp add_solution(state, solution) do
-    Map.update(state, :used_solutions, [], &([solution | &1]))
   end
 
   ### Client
